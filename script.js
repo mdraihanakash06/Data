@@ -1,7 +1,7 @@
 // ============================================================
 //  ⚠️ এখানে আপনার Google Apps Script URL বসান
 // ============================================================
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwl6lx8eu2UjacI2o7Oqg2IAllCQcZYeSk95HBxYoZ91azwJ_hif1negjyGFQWyrsys_g/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxatzLUpR9g3ZgvQcpYGd19xH7xtbZ4Nf_wexyV7Odp6CdUUq6Izsm3ApyEGz9Awl4H/exec";
 
 // ============================================================
 //  কোর্সের ডেটা
