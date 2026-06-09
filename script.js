@@ -1,7 +1,7 @@
 // ============================================================
 //  ⚠️ এখানে আপনার Google Apps Script URL বসান
 // ============================================================
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxatzLUpR9g3ZgvQcpYGd19xH7xtbZ4Nf_wexyV7Odp6CdUUq6Izsm3ApyEGz9Awl4H/exec";
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGP-er3KVFJfo9AjaxRoxoZjBCO5LoDKNk3ckhRJfVorWQzcndLL8MP62BHWYx-QhF/exec";
 
 // 🔗 ফর্ম সাবমিট সফল হওয়ার পর "বন্ধ করুন" এ ক্লিক করলে যে লিংকে রিডাইরেক্ট হবে, সেটি এখানে দিন:
 var REDIRECT_URL = "YOUR_CUSTOM_LINK_HERE"; 
