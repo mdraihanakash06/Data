@@ -3,6 +3,9 @@
 // ============================================================
 var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxatzLUpR9g3ZgvQcpYGd19xH7xtbZ4Nf_wexyV7Odp6CdUUq6Izsm3ApyEGz9Awl4H/exec";
 
+// 🔗 ফর্ম সাবমিট হওয়ার পর "বন্ধ করুন" বাটনে ক্লিক করলে যে লিংকে যাবে তা এখানে দিন:
+var REDIRECT_URL = "YOUR_CUSTOM_LINK_HERE"; 
+
 // ============================================================
 //  কোর্সের ডেটা — এখানে এডিট করুন
 // ============================================================
@@ -101,8 +104,10 @@ courses.forEach(function(c, i) {
     return '<span class="cc-tag" style="background:' + c.tagBg + ';color:' + c.tagColor + '">' + t.trim() + '</span>';
   }).join('');
 
-  // কার্ডে প্রথম plan এর প্রাইস দেখাবে
-  var startPrice = c.plans[0].price;
+  // 🔄 আপডেট: সর্বনিম্ন এবং সর্বোচ্চ প্রাইস রেঞ্জ বের করা হচ্ছে
+  var minPrice = c.plans[0].price;
+  var maxPrice = c.plans[c.plans.length - 1].price;
+  var priceRange = minPrice.replace('৳', '') + ' - ' + maxPrice;
 
   var card = document.createElement('div');
   card.className = 'course-card';
@@ -118,7 +123,7 @@ courses.forEach(function(c, i) {
     '</div>' +
     '<div class="cc-footer">' +
       '<div class="cc-price-wrap">' +
-        '<div class="cc-price">' + startPrice + ' থেকে</div>' +
+        '<div class="cc-price">৳' + priceRange + '</div>' + // রেঞ্জ অনুযায়ী প্রাইস শো করবে
         '<div class="cc-dur">' + c.plans.length + 'টি প্ল্যান উপলব্ধ</div>' +
       '</div>' +
       '<button class="cc-enroll" data-index="' + i + '">ভর্তি হন</button>' +
@@ -148,26 +153,21 @@ function openModal(i) {
   document.getElementById('modalTitle').textContent = c.name;
   document.getElementById('modalMeta').textContent = c.seats + ' · ' + c.plans.length + 'টি প্ল্যান';
 
-  // Topics
   var topics = c.topics.split(',');
   var topicsHtml = topics.map(function(t) {
     return '<span class="md-topic">' + t.trim() + '</span>';
   }).join('');
 
-  // Plan Dropdown বানাও
-  var planOptions = c.plans.map(function(p, idx) {
-    return '<option value="' + idx + '">' + p.label + ' — ' + p.price + '</option>';
-  }).join('');
-
   document.getElementById('modalDetail').innerHTML =
     '<p class="md-desc">' + c.desc + '</p>' +
 
-    // প্ল্যান সিলেক্টর
-    '<div class="plan-selector">' +
-      '<label class="plan-label">📅 কোর্সের মেয়াদ ও মূল্য বেছে নিন</label>' +
+    // 🔄 আপডেট: প্ল্যান সিলেক্টর সেকশনে অ্যানিমেশন ক্লাস (highlight-pulse) যুক্ত করা হয়েছে
+    '<div class="plan-selector highlight-pulse" id="planSelectorContainer">' +
+      '<label class="plan-label">⚠️ প্রথমে কোর্সের মেয়াদ ও মূল্য সিলেক্ট করুন (বাধ্যতামূলক)</label>' +
       '<div class="plan-cards" id="planCards">' +
         c.plans.map(function(p, idx) {
-          return '<div class="plan-card' + (idx === 0 ? ' selected' : '') + '" data-plan="' + idx + '" data-course="' + i + '">' +
+          // ডিফল্ট কোনোটিই সিলেক্টেড থাকবে না, ইউজারকে ক্লিক করতে হবে
+          return '<div class="plan-card" data-plan="' + idx + '" data-course="' + i + '">' +
             '<div class="plan-card-duration">' + p.label + '</div>' +
             '<div class="plan-card-price">' + p.price + '</div>' +
           '</div>';
@@ -176,8 +176,8 @@ function openModal(i) {
     '</div>' +
 
     '<div class="md-stats">' +
-      '<div class="md-stat"><label>নির্বাচিত মূল্য</label><span id="selectedPrice">' + c.plans[0].price + '</span></div>' +
-      '<div class="md-stat"><label>মেয়াদ</label><span id="selectedDuration">' + c.plans[0].duration + '</span></div>' +
+      '<div class="md-stat"><label>নির্ধারিত মূল্য</label><span id="selectedPrice">সিলেক্ট করুন</span></div>' +
+      '<div class="md-stat"><label>মেয়াদ</label><span id="selectedDuration">সিলেক্ট করুন</span></div>' +
       '<div class="md-stat"><label>লেভেল</label><span>' + (c.level || 'সবার জন্য') + '</span></div>' +
       '<div class="md-stat"><label>আসন সংখ্যা</label><span>' + c.seats + '</span></div>' +
     '</div>' +
@@ -195,10 +195,13 @@ function openModal(i) {
         document.querySelectorAll('.plan-card').forEach(function(p) { p.classList.remove('selected'); });
         this.classList.add('selected');
 
+        // সিলেক্ট করার পর অ্যানিমেশন বন্ধ হয়ে যাবে
+        document.getElementById('planSelectorContainer').classList.remove('highlight-pulse');
+
         document.getElementById('selectedPrice').textContent = plan.price;
         document.getElementById('selectedDuration').textContent = plan.duration;
 
-        // ফর্মে সিলেক্টেড প্ল্যান সেভ করো
+        // ফর্মে সিলেক্টেড প্ল্যান ডাটা সেভ
         document.getElementById('fCourse').setAttribute('data-selected-plan', planIdx);
         document.getElementById('fCourse').setAttribute('data-selected-price', plan.price);
         document.getElementById('fCourse').setAttribute('data-selected-duration', plan.duration);
@@ -206,11 +209,11 @@ function openModal(i) {
     });
   }, 50);
 
-  // ডিফল্ট সিলেক্টেড প্ল্যান
+  // শুরুতে কোনো প্ল্যান সিলেক্টেড থাকবে না
   document.getElementById('fCourse').value = c.name;
-  document.getElementById('fCourse').setAttribute('data-selected-plan', '0');
-  document.getElementById('fCourse').setAttribute('data-selected-price', c.plans[0].price);
-  document.getElementById('fCourse').setAttribute('data-selected-duration', c.plans[0].duration);
+  document.getElementById('fCourse').removeAttribute('data-selected-plan');
+  document.getElementById('fCourse').removeAttribute('data-selected-price');
+  document.getElementById('fCourse').removeAttribute('data-selected-duration');
 
   document.getElementById('modalFormWrap').style.display = 'block';
   document.getElementById('modalSuccess').style.display = 'none';
@@ -247,9 +250,16 @@ document.getElementById('btnSubmit').addEventListener('click', function() {
   var name   = document.getElementById('fName').value.trim();
   var phone  = document.getElementById('fPhone').value.trim();
   var course = document.getElementById('fCourse').value;
+  var planCheck = document.getElementById('fCourse').getAttribute('data-selected-plan');
   var price  = document.getElementById('fCourse').getAttribute('data-selected-price') || '';
   var duration = document.getElementById('fCourse').getAttribute('data-selected-duration') || '';
 
+  // ⚠️ ভ্যালিডেশন: প্ল্যান সিলেক্ট না করলে ফর্ম সাবমিট হবে না
+  if (!planCheck) {
+    alert('দয়া করে প্রথমে কোর্সের মেয়াদ ও মূল্য (Plan) সিলেক্ট করুন!');
+    document.getElementById('planSelectorContainer').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   if (!name)  { alert('অনুগ্রহ করে আপনার নাম লিখুন।'); document.getElementById('fName').focus(); return; }
   if (!phone || phone.length < 11) { alert('সঠিক ফোন নম্বর দিন।'); document.getElementById('fPhone').focus(); return; }
   if (!course) { alert('একটি কোর্স বেছে নিন।'); return; }
@@ -286,9 +296,27 @@ document.getElementById('btnSubmit').addEventListener('click', function() {
   });
 });
 
+// 🔄 আপডেট: সাকসেস মেসেজ ও কাস্টম রিডাইরেক্ট বাটন জেনারেট করা
 function showSuccess() {
   document.getElementById('modalFormWrap').style.display = 'none';
-  document.getElementById('modalSuccess').style.display = 'block';
+  
+  // সাকসেস বক্স এর HTML কাস্টমাইজেশন (লিংক বাটনসহ)
+  var successContainer = document.getElementById('modalSuccess');
+  successContainer.innerHTML = `
+    <div style="text-align:center; padding: 20px;">
+      <span style="font-size: 50px;">✅</span>
+      <h3 style="color: #059669; margin-top: 10px;">আপনার আবেদনটি সফলভাবে জমা হয়েছে!</h3>
+      <p style="color: #64748b; font-size: 14px;">আমরা খুব শীঘ্রই আপনার সাথে যোগাযোগ করব।</p>
+      <a href="${REDIRECT_URL}" class="btn-redirect" id="redirectBtn">বন্ধ করুন ও মূল পেজে যান</a>
+    </div>
+  `;
+  
+  successContainer.style.display = 'block';
+  
+  // "বন্ধ করুন" বাটনে ক্লিক করলে কাস্টম লিংকে রিডাইরেক্ট ও মডাল ক্লোজ হবে
+  document.getElementById('redirectBtn').addEventListener('click', function(e) {
+    closeModal();
+  });
 }
 
 // ============================================================
@@ -296,9 +324,9 @@ function showSuccess() {
 // ============================================================
 window.addEventListener('scroll', function() {
   var nav = document.getElementById('nav');
-  if (window.scrollY > 20) {
+  if (nav && window.scrollY > 20) {
     nav.classList.add('scrolled');
-  } else {
+  } else if (nav) {
     nav.classList.remove('scrolled');
   }
 });
